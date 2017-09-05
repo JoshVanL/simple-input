@@ -31,11 +31,11 @@ func YesNo(query, promt string, defYes bool) (responce bool) {
 		option = " [y/N]"
 	}
 
-	fmt.Printf("\n%s%s\n", query, option)
+	fmt.Printf("\n%s%s", query, option)
 
 	acc := false
 	for !acc {
-		fmt.Print(promt)
+		fmt.Printf("\n%s", promt)
 
 		res, err := reader.ReadString('\n')
 		if err != nil {
@@ -54,7 +54,7 @@ func YesNo(query, promt string, defYes bool) (responce bool) {
 			responce = defYes
 			acc = true
 		} else {
-			fmt.Printf("Bad responce. - %s", option)
+			fmt.Printf("Bad responce. %s", option)
 		}
 	}
 
@@ -99,6 +99,32 @@ func Open(query, promt string) (responce string) {
 
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Printf("\n%s\n", query)
+	acc := false
+
+	for !acc {
+		fmt.Print(promt)
+
+		res, err := reader.ReadString('\n')
+		if err != nil {
+			panic(err)
+		}
+		res = res[0 : len(res)-1]
+
+		if res == "" {
+			fmt.Print("Nothing entered\n")
+		} else {
+			responce = res
+			acc = true
+		}
+	}
+
+	return responce
+}
+
+func NoQuery(promt string) (responce string) {
+	go Catch()
+
+	reader := bufio.NewReader(os.Stdin)
 	acc := false
 
 	for !acc {
