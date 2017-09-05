@@ -4,11 +4,16 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 func main() {
+
+	go Catch()
+
 	ans := Open("A query? OPEN ANSWER", "$ ")
 	ans2 := Select("A query? A CHOICE", "» ", []string{"foo", "bla", "bar"})
 	ans3 := YesNo("A query? YES NO", "> ", true)
@@ -16,6 +21,16 @@ func main() {
 	fmt.Printf("%s\n", ans)
 	fmt.Printf("%s\n", ans2)
 	fmt.Printf("%v\n", ans3)
+}
+
+func Catch() {
+	c := make(chan os.Signal, 2)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	<-c
+
+	fmt.Printf("\nHandle exit\n")
+
+	os.Exit(1)
 }
 
 func YesNo(query, promt string, defYes bool) (responce bool) {
