@@ -10,6 +10,108 @@ import (
 	"syscall"
 )
 
+type Open struct {
+	Query    string
+	Prompt   string
+	Required bool
+	Default  string
+}
+
+type Select struct {
+	Query   string
+	Prompt  string
+	Choice  *[]string
+	Default int
+}
+
+func (s *Select) Ask() (responce string) {
+	go Catch()
+
+	reader := bufio.NewReader(os.Stdin)
+	if s.Query != "" {
+		fmt.Printf("\n%s", s.Query)
+	}
+	if s.Default > 0 {
+		fmt.Printf(" (default %s)", s.Default)
+	}
+	fmt.Print("\n")
+
+	for i, s := range *s.Choice {
+		fmt.Printf("%d. %s\n", i+1, s)
+	}
+
+	acc := false
+	var n int
+	for !acc {
+		fmt.Print(s.Prompt)
+
+		res, err := reader.ReadString('\n')
+		if err != nil {
+			panic(err)
+		}
+		res = res[0 : len(res)-1]
+
+		if res == "" {
+			if s.Default > 0 {
+				//TODO: Make this better
+				choices = *s.Choice
+				return choices[n-1]
+			} else {
+				fmt.Printf("Nothing entered.\n")
+			}
+
+		} else if n, err = strconv.Atoi(res); err != nil || n < 1 || n > len(*s.Choice) {
+			fmt.Printf("Responce must be a number between 1 and %d\n", len(*s.Choice))
+		} else {
+			acc = true
+		}
+	}
+
+	//TODO: improve this:
+	choices := *s.Choice
+	responce = choices[n-1]
+
+	return responce
+}
+
+func (o *Open) Ask() (responce string) {
+	go Catch()
+
+	reader := bufio.NewReader(os.Stdin)
+	if o.Query != "" {
+		fmt.Printf("\n%s", o.Query)
+	}
+	if !o.Required {
+		fmt.Printf(" (default %s)", o.Default)
+	}
+	fmt.Print("\n")
+
+	for {
+		if o.Prompt != "" {
+			fmt.Print(o.Prompt)
+		}
+
+		res, err := reader.ReadString('\n')
+		if err != nil {
+			panic(err)
+		}
+		res = res[0 : len(res)-1]
+
+		if res == "" {
+			if o.Required {
+				fmt.Print("Nothing entered\n")
+			} else if o.Default != "" {
+				return responce
+			} else {
+				return ""
+			}
+
+		} else {
+			return res
+		}
+	}
+}
+
 func Catch() {
 	c := make(chan os.Signal, 2)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
@@ -20,7 +122,7 @@ func Catch() {
 	os.Exit(1)
 }
 
-func YesNo(query, promt string, defYes bool) (responce bool) {
+func YesNo(query, prompt string, defYes bool) (responce bool) {
 	go Catch()
 
 	reader := bufio.NewReader(os.Stdin)
@@ -35,7 +137,7 @@ func YesNo(query, promt string, defYes bool) (responce bool) {
 
 	acc := false
 	for !acc {
-		fmt.Printf("\n%s", promt)
+		fmt.Printf("\n%s", prompt)
 
 		res, err := reader.ReadString('\n')
 		if err != nil {
@@ -55,92 +157,6 @@ func YesNo(query, promt string, defYes bool) (responce bool) {
 			acc = true
 		} else {
 			fmt.Printf("Bad responce. %s", option)
-		}
-	}
-
-	return responce
-}
-
-func Select(query, promt string, choice []string) (responce string) {
-	go Catch()
-
-	reader := bufio.NewReader(os.Stdin)
-	var n int
-	acc := false
-	fmt.Printf("\n%s\n", query)
-	for i, s := range choice {
-		fmt.Printf("%d. %s\n", i+1, s)
-	}
-
-	for !acc {
-		fmt.Printf("%s", promt)
-
-		responce, err := reader.ReadString('\n')
-		if err != nil {
-			panic(err)
-		}
-		responce = responce[0 : len(responce)-1]
-
-		n, err = strconv.Atoi(responce)
-		if err != nil || n < 1 || n > len(choice) {
-			fmt.Printf("Responce must be a number between 1 and %d\n", len(choice))
-		} else {
-			acc = true
-		}
-	}
-
-	responce = choice[n-1]
-
-	return responce
-}
-
-func Open(query, promt string) (responce string) {
-	go Catch()
-
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Printf("\n%s\n", query)
-	acc := false
-
-	for !acc {
-		fmt.Print(promt)
-
-		res, err := reader.ReadString('\n')
-		if err != nil {
-			panic(err)
-		}
-		res = res[0 : len(res)-1]
-
-		if res == "" {
-			fmt.Print("Nothing entered\n")
-		} else {
-			responce = res
-			acc = true
-		}
-	}
-
-	return responce
-}
-
-func NoQuery(promt string) (responce string) {
-	go Catch()
-
-	reader := bufio.NewReader(os.Stdin)
-	acc := false
-
-	for !acc {
-		fmt.Print(promt)
-
-		res, err := reader.ReadString('\n')
-		if err != nil {
-			panic(err)
-		}
-		res = res[0 : len(res)-1]
-
-		if res == "" {
-			fmt.Print("Nothing entered\n")
-		} else {
-			responce = res
-			acc = true
 		}
 	}
 
