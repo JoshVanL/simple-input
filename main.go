@@ -23,10 +23,22 @@ func main() {
 	ans = op.Ask()
 	fmt.Printf("Result >%s\n", ans)
 
-	//	se := &Select{
-	//		Query: "A select no def",
-	//
+	se := &Select{
+		Query:  "A select no default",
+		Prompt: "> ",
+		Choice: &[]string{"foo", "bar", "cat", "dog"},
+	}
+	ans = se.Ask()
+	fmt.Printf("Ans >%s\n", ans)
 
+	se = &Select{
+		Query:   "A select with default",
+		Prompt:  "$ ",
+		Choice:  &[]string{"foo", "bar", "cat", "dog"},
+		Default: 2,
+	}
+	ans = se.Ask()
+	fmt.Printf("Ans >%s\n", ans)
 	//ans1 := Open("A query? OPEN ANSWER", "$ ")
 	//ans2 := Select("A query? A CHOICE", "» ", []string{"foo", "bla", "bar"})
 	//ans3 := YesNo("A query? YES NO", "> ", true)

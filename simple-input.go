@@ -24,6 +24,47 @@ type Select struct {
 	Default int
 }
 
+type YesNo struct {
+	Query   string
+	Prompt  string
+	Default bool
+}
+
+func (y *YesNo) YesNo() (responce bool) {
+	go Catch()
+
+	reader := bufio.NewReader(os.Stdin)
+	var option string
+	if y.Default {
+		option = " [Y/n]"
+	} else {
+		option = " [y/N]"
+	}
+
+	fmt.Printf("\n%s%s", y.Query, option)
+
+	for {
+		fmt.Printf("\n%s", y.Prompt)
+
+		res, err := reader.ReadString('\n')
+		if err != nil {
+			panic(err)
+		}
+		res = res[0 : len(res)-1]
+
+		res = strings.ToLower(res)
+		if res == "y" || res == "yes" {
+			return true
+		} else if res == "n" || res == "no" {
+			return false
+		} else if res == "" {
+			return y.Default
+		} else {
+			fmt.Printf("Bad responce. %s", option)
+		}
+	}
+}
+
 func (s *Select) Ask() (responce string) {
 	go Catch()
 
@@ -32,7 +73,7 @@ func (s *Select) Ask() (responce string) {
 		fmt.Printf("\n%s", s.Query)
 	}
 	if s.Default > 0 {
-		fmt.Printf(" (default %s)", s.Default)
+		fmt.Printf(" (default %d)", s.Default)
 	}
 	fmt.Print("\n")
 
@@ -40,9 +81,8 @@ func (s *Select) Ask() (responce string) {
 		fmt.Printf("%d. %s\n", i+1, s)
 	}
 
-	acc := false
 	var n int
-	for !acc {
+	for {
 		fmt.Print(s.Prompt)
 
 		res, err := reader.ReadString('\n')
@@ -54,8 +94,8 @@ func (s *Select) Ask() (responce string) {
 		if res == "" {
 			if s.Default > 0 {
 				//TODO: Make this better
-				choices = *s.Choice
-				return choices[n-1]
+				choices := *s.Choice
+				return choices[s.Default-1]
 			} else {
 				fmt.Printf("Nothing entered.\n")
 			}
@@ -63,15 +103,11 @@ func (s *Select) Ask() (responce string) {
 		} else if n, err = strconv.Atoi(res); err != nil || n < 1 || n > len(*s.Choice) {
 			fmt.Printf("Responce must be a number between 1 and %d\n", len(*s.Choice))
 		} else {
-			acc = true
+			//TODO: improve this:
+			choices := *s.Choice
+			return choices[n-1]
 		}
 	}
-
-	//TODO: improve this:
-	choices := *s.Choice
-	responce = choices[n-1]
-
-	return responce
 }
 
 func (o *Open) Ask() (responce string) {
@@ -100,10 +136,8 @@ func (o *Open) Ask() (responce string) {
 		if res == "" {
 			if o.Required {
 				fmt.Print("Nothing entered\n")
-			} else if o.Default != "" {
-				return responce
 			} else {
-				return ""
+				return o.Default
 			}
 
 		} else {
@@ -120,45 +154,4 @@ func Catch() {
 	fmt.Printf("\nHandle exit\n")
 
 	os.Exit(1)
-}
-
-func YesNo(query, prompt string, defYes bool) (responce bool) {
-	go Catch()
-
-	reader := bufio.NewReader(os.Stdin)
-	var option string
-	if defYes {
-		option = " [Y/n]"
-	} else {
-		option = " [y/N]"
-	}
-
-	fmt.Printf("\n%s%s", query, option)
-
-	acc := false
-	for !acc {
-		fmt.Printf("\n%s", prompt)
-
-		res, err := reader.ReadString('\n')
-		if err != nil {
-			panic(err)
-		}
-		res = res[0 : len(res)-1]
-
-		res = strings.ToLower(res)
-		if res == "y" || res == "yes" {
-			responce = true
-			acc = true
-		} else if res == "n" || res == "no" {
-			responce = false
-			acc = true
-		} else if res == "" {
-			responce = defYes
-			acc = true
-		} else {
-			fmt.Printf("Bad responce. %s", option)
-		}
-	}
-
-	return responce
 }
