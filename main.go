@@ -39,13 +39,20 @@ func main() {
 	}
 	ans = se.Ask()
 	fmt.Printf("Ans >%s\n", ans)
-	//ans1 := Open("A query? OPEN ANSWER", "$ ")
-	//ans2 := Select("A query? A CHOICE", "» ", []string{"foo", "bla", "bar"})
-	//ans3 := YesNo("A query? YES NO", "> ", true)
-	//ans4 := NoQuery("No Query» ")
 
-	//fmt.Printf("%s\n", ans1)
-	//fmt.Printf("%s\n", ans2)
-	//fmt.Printf("%v\n", ans3)
-	//fmt.Printf("%v\n", ans4)
+	yn := &YesNo{
+		Query:   "Default Yes",
+		Prompt:  "$ ",
+		Default: true,
+	}
+	ansb := yn.Ask()
+	fmt.Printf("Ans >%v\n", ansb)
+
+	yn = &YesNo{
+		Query:   "Default No",
+		Prompt:  "$ ",
+		Default: false,
+	}
+	ansb = yn.Ask()
+	fmt.Printf("Ans >%v\n", ansb)
 }

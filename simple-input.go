@@ -30,7 +30,7 @@ type YesNo struct {
 	Default bool
 }
 
-func (y *YesNo) YesNo() (responce bool) {
+func (y *YesNo) Ask() (responce bool) {
 	go Catch()
 
 	reader := bufio.NewReader(os.Stdin)
